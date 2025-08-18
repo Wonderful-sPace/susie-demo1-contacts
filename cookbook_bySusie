@@ -1,0 +1,14 @@
+# init
+cd /Users/susie/Desktop/Temp_Laptop3/Java_Files/Yn/ewha/25_1_wippo/susie_demo1_contacts
+curl https://start.spring.io/starter.zip \
+  -d dependencies=web,data-jpa,mysql \
+  -d javaVersion=17 \
+  -d type=gradle-project \
+  -d language=java \
+  -d name=susie_demo1_contacts \
+  -d groupId=com.example \
+  -d artifactId=susie_demo1_contacts \
+  -o susie_demo1_contacts.zip
+
+unzip susie_demo1_contacts.zip -d .
+
