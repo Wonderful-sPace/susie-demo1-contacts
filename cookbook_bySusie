@@ -12,3 +12,5 @@ curl https://start.spring.io/starter.zip \
 
 unzip susie_demo1_contacts.zip -d .
 
+# 실행
+./gradlew bootRun
