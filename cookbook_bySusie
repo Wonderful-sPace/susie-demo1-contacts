@@ -14,3 +14,12 @@ unzip susie_demo1_contacts.zip -d .
 
 # 실행
 ./gradlew bootRun
+# mysql 접속
+mysql -u wippouser -p
+
+# mysql 테스트
+USE wippo;
+INSERT INTO users (phone_number, display_name, status, created_at, updated_at)
+VALUES
+ ('+821011112222','수수수지','ACTIVE', NOW(), NOW()),
+ ('+821033344455','미미미뇨','ACTIVE', NOW(), NOW());
