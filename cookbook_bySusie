@@ -19,7 +19,23 @@ mysql -u wippouser -p
 
 # mysql 테스트
 USE wippo;
-INSERT INTO users (phone_number, display_name, status, created_at, updated_at)
-VALUES
- ('+821011112222','수수수지','ACTIVE', NOW(), NOW()),
- ('+821033344455','미미미뇨','ACTIVE', NOW(), NOW());
+
+INSERT INTO users (
+    phone_number,
+    display_name,
+    profile_image_url,
+    status,
+    phone_verified_at,
+    created_at,
+    updated_at
+) VALUES (
+    '01011112222',                -- 전화번호
+    '테스트유저',                   -- 표시 이름
+    'https://example.com/test.png', -- 프로필 URL (null 가능)
+    'ACTIVE',                      -- 상태 (enum: ACTIVE, SUSPENDED, DELETED)
+    NOW(),                         -- 휴대폰 인증 시간 (null 가능)
+    NOW(),
+    NOW()
+);
+
+SELECT * FROM users;
