@@ -1,60 +1,57 @@
 package com.example.susie_demo1_contacts.domain.contact.service;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
-import com.example.susie_demo1_contacts.domain.contact.dto.ContactSyncDto;
+import com.example.susie_demo1_contacts.domain.contact.dto.ContactDto;
+import com.example.susie_demo1_contacts.domain.contact.entity.Contact;
+import com.example.susie_demo1_contacts.domain.repository.ContactRepository;
 import com.example.susie_demo1_contacts.domain.user.User;
-import com.example.susie_demo1_contacts.domain.user.User.AccountStatus;
 import com.example.susie_demo1_contacts.domain.user.UserRepository;
-import com.example.susie_demo1_contacts.global.utils.PhoneNormalizer;
 
 import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
 public class ContactService {
-    private static final int MAX_CONTACTS = 3000;
-    private static final int BATCH = 800;
 
+    private final ContactRepository contactRepository;
     private final UserRepository userRepository;
 
-    public ContactSyncDto.Response sync(ContactSyncDto.Request request) {
-        List<String> incoming = Optional.ofNullable(request.getContacts()).orElse(List.of());
-        if (incoming.size() > MAX_CONTACTS) {
-            throw new IllegalArgumentException("contacts too large (max " + MAX_CONTACTS + ")");
+    // 연락처 동기화 (내 주소록 업데이트)
+    public void sync(User owner, List<ContactDto.ContactItem> items) {
+        // 일단 기존 연락처 삭제 (단순화)
+        contactRepository.deleteAll(contactRepository.findByOwner(owner));
+
+        // 새 연락처 저장
+        for (var item : items) {
+            // User 테이블에서 가입자 찾기
+            var linkedUser = userRepository.findByPhoneNumber(item.getPhoneNumber()).orElse(null);
+
+            Contact contact = Contact.builder()
+                    .owner(owner)
+                    .phoneNumber(item.getPhoneNumber())
+                    .displayName(item.getDisplayName())
+                    .linkedUser(linkedUser)
+                    .status(Contact.ContactStatus.NORMAL)
+                    .build();
+
+            contactRepository.save(contact);
         }
+    }
 
-        var normalized = PhoneNormalizer.normalizeList(incoming, request.getRegion());
-
-        List<User> found = new ArrayList<>();
-        for (int i = 0; i < normalized.size(); i += BATCH) {
-            var slice = normalized.subList(i, Math.min(i + BATCH, normalized.size()));
-            found.addAll(userRepository.findByPhoneNumberIn(slice));
-        }
-
-        // ACTIVE만
-        found = found.stream().filter(u -> u.getStatus() == AccountStatus.ACTIVE).toList();
-
-        var registeredPhones = found.stream().map(User::getPhoneNumber).collect(Collectors.toSet());
-        var unregistered = normalized.stream().filter(p -> !registeredPhones.contains(p)).toList();
-
-        var registered = found.stream().map(u ->
-                ContactSyncDto.Registered.builder()
-                        .id(u.getId())
-                        .phoneNumber(u.getPhoneNumber())
-                        .displayName(u.getDisplayName())
-                        .profileImageUrl(u.getProfileImageUrl())
+    // 내 연락처 조회
+    public List<ContactDto.Response> list(User owner) {
+        return contactRepository.findByOwner(owner).stream()
+                .map(c -> ContactDto.Response.builder()
+                        .id(c.getId())
+                        .phoneNumber(c.getPhoneNumber())
+                        .displayName(c.getDisplayName())
+                        .profileImageUrl(c.getLinkedUser() != null ? c.getLinkedUser().getProfileImageUrl() : null)
+                        .registered(c.getLinkedUser() != null)
+                        .status(c.getStatus().name())
                         .build()
-        ).toList();
-
-        return ContactSyncDto.Response.builder()
-                .registered(registered)
-                .unregistered(unregistered)
-                .build();
+                ).toList();
     }
 }
