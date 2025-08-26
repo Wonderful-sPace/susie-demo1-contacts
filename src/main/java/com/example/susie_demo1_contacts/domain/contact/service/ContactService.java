@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service;
 
 import com.example.susie_demo1_contacts.domain.contact.dto.ContactDto;
 import com.example.susie_demo1_contacts.domain.contact.entity.Contact;
-import com.example.susie_demo1_contacts.domain.repository.ContactRepository;
+import com.example.susie_demo1_contacts.domain.contact.repository.ContactRepository;
 import com.example.susie_demo1_contacts.domain.user.User;
 import com.example.susie_demo1_contacts.domain.user.UserRepository;
 

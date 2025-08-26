@@ -1,4 +1,4 @@
-package com.example.susie_demo1_contacts.domain.repository;
+package com.example.susie_demo1_contacts.domain.contact.repository;
 
 import java.util.List;
 
